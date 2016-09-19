@@ -1,2 +1,2 @@
 # tomcat-8-wffweb-demo-apps
-wffweb demo projects configured for tomcat-8 application server
+wffweb demo projects configured for [tomcat-8 application server](http://www.mochahost.com/6128-46.html)
