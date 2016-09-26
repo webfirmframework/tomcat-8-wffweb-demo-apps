@@ -75,17 +75,17 @@ public class ListUsersTempate extends Div implements ServerAsyncMethod {
                             {
                                 new Th(this) {
                                     {
-                                        new NoTag(this, "Company");
+                                        new NoTag(this, "Company (会社)");
                                     }
                                 };
                                 new Th(this) {
                                     {
-                                        new NoTag(this, "Contact");
+                                        new NoTag(this, "Contact (接触)");
                                     }
                                 };
                                 new Th(this) {
                                     {
-                                        new NoTag(this, "Country");
+                                        new NoTag(this, "Country (国)");
                                     }
                                 };
                             }
