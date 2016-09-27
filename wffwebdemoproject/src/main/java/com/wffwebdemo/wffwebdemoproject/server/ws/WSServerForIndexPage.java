@@ -16,6 +16,7 @@ import javax.websocket.server.ServerEndpoint;
 import javax.websocket.server.ServerEndpointConfig;
 import javax.websocket.server.ServerEndpointConfig.Configurator;
 
+import com.webfirmframework.wffweb.PushFailedException;
 import com.webfirmframework.wffweb.server.page.BrowserPage;
 import com.webfirmframework.wffweb.server.page.BrowserPageContext;
 import com.webfirmframework.wffweb.server.page.WebSocketPushListener;
@@ -124,6 +125,7 @@ public class WSServerForIndexPage extends Configurator {
                     // session.getAsyncRemote().sendBinary(ByteBuffer.wrap(message));
                 } catch (Exception e) {
                     e.printStackTrace();
+                    throw new PushFailedException(e.getMessage(), e);
                 }
             }
         });
