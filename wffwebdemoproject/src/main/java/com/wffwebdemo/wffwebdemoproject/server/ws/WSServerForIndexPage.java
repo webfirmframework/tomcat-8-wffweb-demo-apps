@@ -8,6 +8,7 @@ import javax.servlet.http.HttpSession;
 import javax.websocket.EndpointConfig;
 import javax.websocket.HandshakeResponse;
 import javax.websocket.OnClose;
+import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
@@ -31,6 +32,8 @@ public class WSServerForIndexPage extends Configurator {
 
     private BrowserPage browserPage;
 
+    private HttpSession httpSession;
+
     @Override
     public void modifyHandshake(ServerEndpointConfig config,
             HandshakeRequest request, HandshakeResponse response) {
@@ -53,11 +56,14 @@ public class WSServerForIndexPage extends Configurator {
     @OnOpen
     public void onOpen(final Session session, EndpointConfig config) {
 
-        HttpSession httpSession = (HttpSession) config.getUserProperties()
+        httpSession = (HttpSession) config.getUserProperties()
                 .get("httpSession");
         System.out.println("websocket session id " + session.getId()
                 + " has opened a connection for httpsession id "
                 + httpSession.getId());
+
+        // never to close the session on inactivity
+        httpSession.setMaxInactiveInterval(-1);
 
         List<String> wffInstanceIds = session.getRequestParameterMap()
                 .get("wffInstanceId");
@@ -110,7 +116,6 @@ public class WSServerForIndexPage extends Configurator {
 
             BrowserPageContext.INSTANCE.webSocketOpened(instanceId);
         }
-        
 
         browserPage.setWebSocketPushListener(new WebSocketPushListener() {
 
@@ -148,12 +153,27 @@ public class WSServerForIndexPage extends Configurator {
      * Note: you can't send messages to the client from this method
      */
     @OnClose
-    public void onClose(Session session) {
+    public void onClose(Session session) throws IOException {
+
+        // how much time you want client for inactivity
+        // may be it could be the same value given for
+        // session timeout in web.xml file.
+        // it's valid only when the browser is closed
+        // because client will be trying to reconnect.
+        // The value is in seconds.
+        httpSession.setMaxInactiveInterval(60 * 30);
+
         System.out.println("Session " + session.getId() + " closed");
         List<String> wffInstanceIds = session.getRequestParameterMap()
                 .get("wffInstanceId");
 
         String instanceId = wffInstanceIds.get(0);
         BrowserPageContext.INSTANCE.webSocketClosed(instanceId);
+    }
+
+    @OnError
+    public void onError(Session session, Throwable throwable) {
+        System.out.println("onError");
+        // NOP
     }
 }
