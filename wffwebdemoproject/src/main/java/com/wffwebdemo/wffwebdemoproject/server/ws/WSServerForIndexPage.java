@@ -21,6 +21,7 @@ import com.webfirmframework.wffweb.PushFailedException;
 import com.webfirmframework.wffweb.server.page.BrowserPage;
 import com.webfirmframework.wffweb.server.page.BrowserPageContext;
 import com.webfirmframework.wffweb.server.page.WebSocketPushListener;
+import com.webfirmframework.wffweb.server.page.action.BrowserPageAction;
 
 /**
  * @ServerEndpoint gives the relative name for the end point This will be
@@ -89,6 +90,9 @@ public class WSServerForIndexPage extends Configurator {
             // }
 
             try {
+                // or refresh the browser
+                session.getBasicRemote().sendBinary(
+                        BrowserPageAction.RELOAD.getActionByteBuffer());
                 session.close();
                 return;
             } catch (IOException e) {
