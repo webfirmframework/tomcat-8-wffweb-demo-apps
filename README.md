@@ -3,4 +3,5 @@ wffweb demo projects configured for [tomcat-8 application server](http://www.moc
 
 [See how it runs](https://youtu.be/PUkYApKxxew)
 
-##### Make demo projects with wffweb and push it to this repository that will be a great contribution for wff developers!
+
+##### Similar demo project is available [in this repository](https://github.com/webfirmframework/tomcat-8-wffweb-demo-apps) which deployed at [https://wffweb.herokuapp.com](https://wffweb.herokuapp.com)
