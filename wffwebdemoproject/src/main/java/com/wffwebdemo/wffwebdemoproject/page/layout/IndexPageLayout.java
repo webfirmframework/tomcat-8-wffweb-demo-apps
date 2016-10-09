@@ -62,7 +62,7 @@ public class IndexPageLayout extends Html {
 
             {
                 
-                new Button(this, new OnClick("wffAsync.serverMethod('testServerMethod', {'somekey':'some value'}).invoke(function(){alert('callback ');})")) {
+                new Button(this, new OnClick("wffAsync.serverMethod('testServerMethod', {'somekey':'some value'}).invoke(function(obj){alert('callback '+obj.serverKey);})")) {
                     {
                         new NoTag(this, "Click Me");
                     }
