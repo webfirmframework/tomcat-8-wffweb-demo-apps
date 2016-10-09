@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.webfirmframework.wffweb.server.page.BrowserPageContext;
 import com.webfirmframework.wffweb.tag.html.AbstractHtml;
 import com.webfirmframework.wffweb.tag.html.Br;
 import com.webfirmframework.wffweb.tag.html.attribute.event.ServerAsyncMethod;
@@ -20,6 +21,7 @@ import com.webfirmframework.wffweb.tag.html.tables.Th;
 import com.webfirmframework.wffweb.tag.html.tables.Tr;
 import com.webfirmframework.wffweb.tag.htmlwff.NoTag;
 import com.webfirmframework.wffweb.wffbm.data.WffBMObject;
+import com.wffwebdemo.wffwebdemoproject.page.ServerLogPage;
 import com.wffwebdemo.wffwebdemoproject.page.model.DocumentModel;
 
 @SuppressWarnings("serial")
@@ -37,7 +39,7 @@ public class ListUsersTempate extends Div implements ServerAsyncMethod {
     private int rowCount = 0;
 
     private Button nextRowsButton;
-
+    
     private Button lazyNextRowsButton;
 
     private Button markGreenButton;
@@ -92,7 +94,7 @@ public class ListUsersTempate extends Div implements ServerAsyncMethod {
                 };
             }
         };
-
+        
         new Br(this);
         new Br(this);
 
@@ -153,8 +155,7 @@ public class ListUsersTempate extends Div implements ServerAsyncMethod {
             {
                 new B(this) {
                     {
-                        new NoTag(this,
-                                "Remove style attribute from column one by one");
+                        new NoTag(this, "Remove style attribute from column one by one");
                     }
                 };
             }
@@ -162,7 +163,7 @@ public class ListUsersTempate extends Div implements ServerAsyncMethod {
 
         new Br(this);
         new Br(this);
-
+        
         new Table(this) {
             {
                 tBody = new TBody(this) {
@@ -235,14 +236,14 @@ public class ListUsersTempate extends Div implements ServerAsyncMethod {
         previousRows = rows;
 
     }
-
+    
     private void addRowsAsStream() {
 
         List<AbstractHtml> rows = new LinkedList<AbstractHtml>();
         if (previousRows != null) {
             tBody.removeChildren(previousRows);
         }
-
+        
         for (int i = 0; i < 1000; i++) {
 
             Tr tr = new Tr(tBody) {
@@ -279,15 +280,19 @@ public class ListUsersTempate extends Div implements ServerAsyncMethod {
         if (nextRowsButton.equals(event.getSourceTag())) {
             addRows();
             countryColumnStyle.addCssProperties("nextRowsButton");
+            displayInServerLogPage("nextRowsButton");
         } else if (markGreenButton.equals(event.getSourceTag())) {
             LOGGER.info("Mark column green");
             countryColumnStyle.addCssProperties("background:green");
+            displayInServerLogPage("Mark column green");
         } else if (markVioletButton.equals(event.getSourceTag())) {
             LOGGER.info("Mark column violet");
             countryColumnStyle.addCssProperties("background:violet");
+            displayInServerLogPage("Mark column violet");
         } else if (removeColoumnStyleButton.equals(event.getSourceTag())) {
             LOGGER.info("remove style all together");
             countryColumnStyle.getCssProperties().clear();
+            displayInServerLogPage("remove style all together ");
         } else if (removeColoumnStyleOneByOneButton
                 .equals(event.getSourceTag())) {
             LOGGER.info("remove style attribyte one by one");
@@ -298,14 +303,26 @@ public class ListUsersTempate extends Div implements ServerAsyncMethod {
                 ownerTag.removeAttributes(
                         countryColumnStyle.getAttributeName());
             }
+            displayInServerLogPage("remove style atribyte one by one");
         } else if (lazyNextRowsButton.equals(event.getSourceTag())) {
-
+            
             addRowsAsStream();
-
+            
             LOGGER.info("lazyNextRowsButton");
+            displayInServerLogPage("lazyNextRowsButton");
         }
 
         return null;
+    }
+
+    private void displayInServerLogPage(String msg) {
+        Object serverLogPageInstanceId = documentModel.getHttpSession()
+                .getAttribute("serverLogPageInstanceId");
+        if (serverLogPageInstanceId != null) {
+            ServerLogPage serverLogPage = (ServerLogPage) BrowserPageContext.INSTANCE
+                    .getBrowserPage(serverLogPageInstanceId.toString());
+            serverLogPage.log(msg);
+        }
     }
 
 }

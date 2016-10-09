@@ -1,5 +1,7 @@
 package com.wffwebdemo.wffwebdemoproject.page.template.users;
 
+import java.util.logging.Logger;
+
 import com.webfirmframework.wffweb.tag.html.Br;
 import com.webfirmframework.wffweb.tag.html.attribute.Target;
 import com.webfirmframework.wffweb.tag.html.attribute.Type;
@@ -19,6 +21,9 @@ import com.wffwebdemo.wffwebdemoproject.page.model.DocumentModel;
 
 @SuppressWarnings("serial")
 public class RegisterUserTempate extends Div implements ServerAsyncMethod {
+
+    private static final Logger LOGGER = Logger
+            .getLogger(RegisterUserTempate.class.getName());
 
     @SuppressWarnings("unused")
     private DocumentModel documentModel;
@@ -78,8 +83,8 @@ public class RegisterUserTempate extends Div implements ServerAsyncMethod {
 
         if (registerButton.equals(event.getSourceTag())) {
 
-            System.out.println("age type " + wffBMObject.getValueType("ageId"));
-            System.out.println("age " + wffBMObject.getValue("ageId"));
+            LOGGER.info("age type " + wffBMObject.getValueType("ageId"));
+            LOGGER.info("age " + wffBMObject.getValue("ageId"));
 
         }
 

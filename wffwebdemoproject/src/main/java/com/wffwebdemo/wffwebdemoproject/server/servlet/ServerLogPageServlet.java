@@ -12,19 +12,19 @@ import javax.servlet.http.HttpSession;
 
 import com.webfirmframework.wffweb.server.page.BrowserPage;
 import com.webfirmframework.wffweb.server.page.BrowserPageContext;
-import com.wffwebdemo.wffwebdemoproject.page.IndexPage;
+import com.wffwebdemo.wffwebdemoproject.page.ServerLogPage;
 
 /**
  * Servlet implementation class HomePageServlet
  */
-@WebServlet({"/", "/index"})
-public class IndexPageServlet extends HttpServlet {
+@WebServlet({"/server-log"})
+public class ServerLogPageServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public IndexPageServlet() {
+    public ServerLogPageServlet() {
         super();
     }
 
@@ -42,7 +42,7 @@ public class IndexPageServlet extends HttpServlet {
             HttpSession session = request.getSession();
 
             String instanceId = (String) session
-                    .getAttribute("indexPageInstanceId");
+                    .getAttribute("serverLogPageInstanceId");
 
             BrowserPage browserPage = null;
             if (instanceId != null) {
@@ -58,10 +58,10 @@ public class IndexPageServlet extends HttpServlet {
             }
 
             if (browserPage == null) {
-                browserPage = new IndexPage(session);
+                browserPage = new ServerLogPage();
                 BrowserPageContext.INSTANCE.addBrowserPage(session.getId(),
                         browserPage);
-                session.setAttribute("indexPageInstanceId",
+                session.setAttribute("serverLogPageInstanceId",
                         browserPage.getInstanceId());
             }
 

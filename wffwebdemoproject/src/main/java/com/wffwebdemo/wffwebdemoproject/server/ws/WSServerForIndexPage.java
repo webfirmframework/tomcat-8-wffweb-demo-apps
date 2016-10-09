@@ -3,6 +3,7 @@ package com.wffwebdemo.wffwebdemoproject.server.ws;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpSession;
 import javax.websocket.EndpointConfig;
@@ -22,6 +23,7 @@ import com.webfirmframework.wffweb.server.page.BrowserPage;
 import com.webfirmframework.wffweb.server.page.BrowserPageContext;
 import com.webfirmframework.wffweb.server.page.WebSocketPushListener;
 import com.webfirmframework.wffweb.server.page.action.BrowserPageAction;
+import com.wffwebdemo.wffwebdemoproject.page.Threaded;
 
 /**
  * @ServerEndpoint gives the relative name for the end point This will be
@@ -31,6 +33,8 @@ import com.webfirmframework.wffweb.server.page.action.BrowserPageAction;
 @ServerEndpoint(value = "/ws-for-index-page", configurator = WSServerForIndexPage.class)
 public class WSServerForIndexPage extends Configurator {
 
+    private static final Logger LOGGER = Logger.getLogger(WSServerForIndexPage.class.getName());
+    
     private BrowserPage browserPage;
 
     private HttpSession httpSession;
@@ -42,6 +46,12 @@ public class WSServerForIndexPage extends Configurator {
         super.modifyHandshake(config, request, response);
 
         HttpSession httpSession = (HttpSession) request.getHttpSession();
+        
+        if (httpSession == null) {
+            System.out.println("httpSession == null");
+            return;
+        }
+        
         config.getUserProperties().put("httpSession", httpSession);
 
         httpSession = (HttpSession) request.getHttpSession();
@@ -57,21 +67,40 @@ public class WSServerForIndexPage extends Configurator {
     @OnOpen
     public void onOpen(final Session session, EndpointConfig config) {
 
+        session.setMaxIdleTimeout(1000 * 60 * 30);
+        
         httpSession = (HttpSession) config.getUserProperties()
                 .get("httpSession");
         System.out.println("websocket session id " + session.getId()
                 + " has opened a connection for httpsession id "
                 + httpSession.getId());
 
-        // never to close the session on inactivity
-        httpSession.setMaxInactiveInterval(-1);
+        if (httpSession != null) {
+            
+            Object totalCons = httpSession.getAttribute("totalConnections");
+            
+            int totalConnections = 0;
+            
+            if (totalCons != null) {
+                totalConnections = (int) totalCons;
+            }
+            
+            totalConnections++;
+            httpSession.setAttribute("totalConnections", totalConnections);
+            
+            // never to close the session on inactivity
+            httpSession.setMaxInactiveInterval(-1);
+            LOGGER.info("httpSession.setMaxInactiveInterval(-1)");
+        }
 
         List<String> wffInstanceIds = session.getRequestParameterMap()
                 .get("wffInstanceId");
 
         String instanceId = wffInstanceIds.get(0);
 
-        browserPage = BrowserPageContext.INSTANCE.getBrowserPage(instanceId);
+//        browserPage = BrowserPageContext.INSTANCE.getBrowserPage(instanceId);
+        
+        browserPage = BrowserPageContext.INSTANCE.webSocketOpened(instanceId);
 
         if (browserPage == null) {
             System.out.println("browserPage == null, read comments");
@@ -92,7 +121,7 @@ public class WSServerForIndexPage extends Configurator {
             try {
                 // or refresh the browser
                 session.getBasicRemote().sendBinary(
-                        BrowserPageAction.RELOAD.getActionByteBuffer());
+                        BrowserPageAction.getActionByteBufferForExecuteJS("alert('going to reload');location.reload(true);"));
                 session.close();
                 return;
             } catch (IOException e) {
@@ -118,16 +147,19 @@ public class WSServerForIndexPage extends Configurator {
             // e.printStackTrace();
             // }
 
-            BrowserPageContext.INSTANCE.webSocketOpened(instanceId);
+//            BrowserPageContext.INSTANCE.webSocketOpened(instanceId);
+            if (browserPage instanceof Threaded) {
+                Threaded threaded = (Threaded) browserPage;
+                threaded.startAllThreads();
+            }
         }
 
-        browserPage.setWebSocketPushListener(new WebSocketPushListener() {
+        browserPage.addWebSocketPushListener(session.getId(), new WebSocketPushListener() {
 
             @Override
-            public void push(byte[] message) {
+            public synchronized void push(ByteBuffer data) {
                 try {
-                    session.getBasicRemote()
-                            .sendBinary(ByteBuffer.wrap(message));
+                    session.getBasicRemote().sendBinary(data);
                     // asyncRemove will make exception if the click is made many
                     // times
                     // https://bz.apache.org/bugzilla/show_bug.cgi?id=56026
@@ -159,20 +191,47 @@ public class WSServerForIndexPage extends Configurator {
     @OnClose
     public void onClose(Session session) throws IOException {
 
+        System.out.println("onClose");
+        
+        if (browserPage instanceof Threaded) {
+            Threaded threaded = (Threaded) browserPage;
+            threaded.stopAllThreads();
+        }
+        
         // how much time you want client for inactivity
         // may be it could be the same value given for
         // session timeout in web.xml file.
         // it's valid only when the browser is closed
         // because client will be trying to reconnect.
         // The value is in seconds.
-        httpSession.setMaxInactiveInterval(60 * 30);
+        if (httpSession != null) {
+            
+
+            Object totalCons = httpSession.getAttribute("totalConnections");
+            
+            int totalConnections = 0;
+            
+            if (totalCons != null) {
+                totalConnections = (int) totalCons;
+                totalConnections--;
+            }
+            
+            httpSession.setAttribute("totalConnections", totalConnections);
+            
+            
+            if (totalConnections == 0) {
+                httpSession.setMaxInactiveInterval(60 * 30);
+            }
+            
+            LOGGER.info("httpSession.setMaxInactiveInterval(60 * 30)");
+        }
 
         System.out.println("Session " + session.getId() + " closed");
         List<String> wffInstanceIds = session.getRequestParameterMap()
                 .get("wffInstanceId");
 
         String instanceId = wffInstanceIds.get(0);
-        BrowserPageContext.INSTANCE.webSocketClosed(instanceId);
+        BrowserPageContext.INSTANCE.webSocketClosed(instanceId, session.getId());
     }
 
     @OnError

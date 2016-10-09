@@ -1,5 +1,9 @@
 package com.wffwebdemo.wffwebdemoproject.page.template;
 
+import java.util.logging.Logger;
+
+import com.webfirmframework.wffweb.server.page.BrowserPage;
+import com.webfirmframework.wffweb.server.page.BrowserPageContext;
 import com.webfirmframework.wffweb.tag.html.Br;
 import com.webfirmframework.wffweb.tag.html.attribute.Target;
 import com.webfirmframework.wffweb.tag.html.attribute.Type;
@@ -18,11 +22,15 @@ import com.webfirmframework.wffweb.tag.html.stylesandsemantics.Span;
 import com.webfirmframework.wffweb.tag.htmlwff.NoTag;
 import com.webfirmframework.wffweb.wffbm.data.BMValueType;
 import com.webfirmframework.wffweb.wffbm.data.WffBMObject;
+import com.wffwebdemo.wffwebdemoproject.page.ServerLogPage;
 import com.wffwebdemo.wffwebdemoproject.page.layout.DashboardLayout;
 import com.wffwebdemo.wffwebdemoproject.page.model.DocumentModel;
 
 @SuppressWarnings("serial")
 public class LoginTemplate extends Div implements ServerAsyncMethod {
+
+    private static final Logger LOGGER = Logger
+            .getLogger(LoginTemplate.class.getName());
 
     private String username;
 
@@ -125,15 +133,18 @@ public class LoginTemplate extends Div implements ServerAsyncMethod {
     @Override
     public WffBMObject asyncMethod(WffBMObject wffBMObject, Event event) {
 
-        System.out.println("asyncMethod");
+        LOGGER.info("asyncMethod");
+
+        displayInServerLogPage("asyncMethod");
 
         if (wffBMObject != null) {
-            System.out
-                    .println("fieldName " + wffBMObject.getValue("fieldName"));
+            LOGGER.info("fieldName " + wffBMObject.getValue("fieldName"));
             if ("username".equals(wffBMObject.getValue("fieldName"))) {
 
                 username = (String) wffBMObject.getValue("fieldValue");
-                System.out.println("username " + username);
+                LOGGER.info("username " + username);
+
+                displayInServerLogPage("username " + username);
 
                 if (username.length() < 4) {
                     msgSpan.addInnerHtml(
@@ -145,7 +156,8 @@ public class LoginTemplate extends Div implements ServerAsyncMethod {
             } else if ("password".equals(wffBMObject.getValue("fieldName"))) {
 
                 password = (String) wffBMObject.getValue("fieldValue");
-                System.out.println("password " + password);
+                LOGGER.info("password " + password);
+                displayInServerLogPage("password " + password);
 
             } else if ("loginButton".equals(wffBMObject.getValue("fieldName"))
                     || event.getSourceTag().equals(form)) {
@@ -156,11 +168,12 @@ public class LoginTemplate extends Div implements ServerAsyncMethod {
                 // check in the db if the username and password is write
                 if ("demo".equals(username) && "demo".equals(password)) {
 
-                    System.out.println("login success");
+                    LOGGER.info("login success");
+                    displayInServerLogPage("login success");
                     // parent.addInnerHtml(new NoTag(null, "login success"));
                     DashboardLayout dashboard = new DashboardLayout(
                             documentModel);
-                    documentModel.getBody().addInnerHtml(dashboard);
+                    documentModel.getBodyDiv().addInnerHtml(dashboard);
 
                 } else {
 
@@ -176,6 +189,16 @@ public class LoginTemplate extends Div implements ServerAsyncMethod {
         }
 
         return null;
+    }
+
+    private void displayInServerLogPage(String msg) {
+        Object serverLogPageInstanceId = documentModel.getHttpSession()
+                .getAttribute("serverLogPageInstanceId");
+        if (serverLogPageInstanceId != null) {
+            ServerLogPage serverLogPage = (ServerLogPage) BrowserPageContext.INSTANCE
+                    .getBrowserPage(serverLogPageInstanceId.toString());
+            serverLogPage.log(msg);
+        }
     }
 
 }
