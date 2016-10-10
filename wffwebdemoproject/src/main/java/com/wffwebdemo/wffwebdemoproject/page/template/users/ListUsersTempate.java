@@ -7,11 +7,13 @@ import java.util.logging.Logger;
 import com.webfirmframework.wffweb.server.page.BrowserPageContext;
 import com.webfirmframework.wffweb.tag.html.AbstractHtml;
 import com.webfirmframework.wffweb.tag.html.Br;
+import com.webfirmframework.wffweb.tag.html.attribute.Type;
 import com.webfirmframework.wffweb.tag.html.attribute.event.ServerAsyncMethod;
 import com.webfirmframework.wffweb.tag.html.attribute.event.mouse.OnClick;
 import com.webfirmframework.wffweb.tag.html.attribute.global.Style;
 import com.webfirmframework.wffweb.tag.html.formatting.B;
 import com.webfirmframework.wffweb.tag.html.formsandinputs.Button;
+import com.webfirmframework.wffweb.tag.html.programming.Script;
 import com.webfirmframework.wffweb.tag.html.stylesandsemantics.Div;
 import com.webfirmframework.wffweb.tag.html.stylesandsemantics.StyleTag;
 import com.webfirmframework.wffweb.tag.html.tables.TBody;
@@ -73,6 +75,14 @@ public class ListUsersTempate extends Div implements ServerAsyncMethod {
                 new NoTag(this,
                         "tr:nth-child(even) {\n    background-color: #dddddd;");
                 new NoTag(this, "}");
+            }
+        };
+        
+        //this way also you can execute JavaScript
+        //check browser console when clicking on list users button
+        new Script(this, new Type(Type.TEXT_JAVASCRIPT)) {
+            {
+                new NoTag(this, "console.log('list users template is added');");
             }
         };
 
