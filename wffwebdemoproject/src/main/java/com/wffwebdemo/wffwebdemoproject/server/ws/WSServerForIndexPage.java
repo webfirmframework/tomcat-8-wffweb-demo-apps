@@ -180,7 +180,7 @@ public class WSServerForIndexPage extends Configurator {
      */
     @OnMessage
     public void onMessage(byte[] message, Session session) {
-        browserPage.websocketMessaged(message);
+        browserPage.webSocketMessaged(message);
     }
 
     /**
