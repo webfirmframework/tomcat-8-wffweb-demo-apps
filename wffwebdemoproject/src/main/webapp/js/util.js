@@ -1,14 +1,14 @@
 function invokeServerMethod() {
 
 	// using wff utf-8 encoder which is cross browser
-	var uint8Array = wffGlobal.encoder.encode("こんにちは webfirmframework");
+	var stringBytes = wffGlobal.encoder.encode("こんにちは webfirmframework");
 	//if the bytes are some row bytes like bytes from some binary file
 	//then use Int8Array
-//	var int8Array = new Int8Array(stringBytes);
+	var int8Array = new Int8Array(stringBytes);
 
 	console.log('object type', Object.prototype.toString
-			.call(uint8Array));
-	console.log(uint8Array);
+			.call(stringBytes));
+	console.log(stringBytes);
 	
 	var argument = {
 		'nullArray' : [null, null],
@@ -23,7 +23,7 @@ function invokeServerMethod() {
 		'anObj' : {
 			'key' : 'val'
 		},
-		'byteArray' : uint8Array,
+		'byteArray' : int8Array,
 		'funcArray' : function() {console.log('m function');},
 		'numberArray' : [ 5, 55, 555, 55, 5555 ]
 	};
