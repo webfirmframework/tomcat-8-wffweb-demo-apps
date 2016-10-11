@@ -7,12 +7,9 @@ import javax.servlet.http.HttpSession;
 
 import com.webfirmframework.wffweb.server.page.BrowserPage;
 import com.webfirmframework.wffweb.tag.html.AbstractHtml;
-import com.webfirmframework.wffweb.tag.html.attribute.event.ServerAsyncMethod;
-import com.webfirmframework.wffweb.wffbm.data.BMValueType;
-import com.webfirmframework.wffweb.wffbm.data.WffBMObject;
 import com.wffwebdemo.wffwebdemoproject.page.layout.IndexPageLayout;
 
-public class IndexPage extends BrowserPage implements Threaded, ServerAsyncMethod {
+public class IndexPage extends BrowserPage implements Threaded {
 
     private static final long serialVersionUID = 1L;
     private final HttpSession httpSession;
@@ -30,7 +27,7 @@ public class IndexPage extends BrowserPage implements Threaded, ServerAsyncMetho
     @Override
     public AbstractHtml render() {
         
-        super.addServerMethod("testServerMethod", this);
+        super.addServerMethod("testServerMethod", new CustomServerMethod());
 
         // here we should return the object IndexPageLayout
 
@@ -67,21 +64,6 @@ public class IndexPage extends BrowserPage implements Threaded, ServerAsyncMetho
             }
             allActiveThreads = null;
         }
-    }
-
-    @Override
-    public WffBMObject asyncMethod(WffBMObject wffBMObject, Event event) {
-        
-        System.out.println(
-                "serverAsyncMethod invoked " + event.getServerMethodName()+" wffBMObject "+wffBMObject);
-        if (wffBMObject != null) {
-            System.out.println("wffBMObject "+wffBMObject.getValue("somekey"));
-        }
-        
-        WffBMObject bmObject = new WffBMObject();
-        bmObject.put("serverKey", BMValueType.STRING, "server value");
-        
-        return bmObject;
     }
 
 }
