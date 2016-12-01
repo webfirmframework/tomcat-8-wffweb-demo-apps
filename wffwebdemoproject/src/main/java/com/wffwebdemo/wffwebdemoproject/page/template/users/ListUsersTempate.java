@@ -289,7 +289,6 @@ public class ListUsersTempate extends Div implements ServerAsyncMethod {
 
         if (nextRowsButton.equals(event.getSourceTag())) {
             addRows();
-            countryColumnStyle.addCssProperties("nextRowsButton");
             displayInServerLogPage("nextRowsButton");
         } else if (markGreenButton.equals(event.getSourceTag())) {
             LOGGER.info("Mark column green");
