@@ -2,7 +2,6 @@ package com.wffwebdemo.wffwebdemoproject.page.template;
 
 import java.util.logging.Logger;
 
-import com.webfirmframework.wffweb.server.page.BrowserPage;
 import com.webfirmframework.wffweb.server.page.BrowserPageContext;
 import com.webfirmframework.wffweb.tag.html.Br;
 import com.webfirmframework.wffweb.tag.html.attribute.Target;
@@ -39,6 +38,14 @@ public class LoginTemplate extends Div implements ServerAsyncMethod {
     private DocumentModel documentModel;
 
     private Span msgSpan;
+    
+    private OnKeyUp passwordOnKeyUp;
+    
+    private OnChange usernameOnChange;
+    
+    private OnChange passwordOnChange;
+    
+    private OnClick loginButtonOnClick;
 
     public LoginTemplate(DocumentModel documentModel) {
         super(null, new Style(
@@ -51,41 +58,47 @@ public class LoginTemplate extends Div implements ServerAsyncMethod {
     private Style getStyleToCenter() {
         return new Style("margin: 0px 0px 0px 124px;");
     }
-
+    
     // validation at server side
-    private OnKeyUp lengthValidation = new OnKeyUp(null,
-            new ServerAsyncMethod() {
+    /**
+     * validates if fieldValue contains minimum 4 characters
+     * 
+     * @param wffBMObject
+     */
+    private void validateLength(WffBMObject wffBMObject) {
 
-                @Override
-                public WffBMObject asyncMethod(WffBMObject wffBMObject,
-                        Event event) {
-                    if (wffBMObject != null) {
-                        String fieldId = (String) wffBMObject
-                                .getValue("fieldId");
+        String fieldValue = (String) wffBMObject.getValue("fieldValue");
 
-                        if ("passwordId".equals(fieldId)) {
-                            String fieldValue = (String) wffBMObject
-                                    .getValue("fieldValue");
-
-                            if (fieldValue.length() < 4) {
-                                msgSpan.addInnerHtml(
-                                        new NoTag(null, "Required min 4"));
-                            } else {
-                                msgSpan.removeAllChildren();
-                            }
-
-                        }
-                    }
-
-                    return null;
-                }
-            }, "return {fieldId:source.id, fieldValue:source.value};", null);
+        if (fieldValue.length() < 4) {
+            msgSpan.addInnerHtml(new NoTag(null, "Required min 4"));
+        } else {
+            msgSpan.removeAllChildren();
+        }
+    }
 
     private Form form;
 
     private void develop() {
 
         documentModel.getPageTitle().addInnerHtml(new NoTag(null, "Login"));
+        
+        passwordOnKeyUp = new OnKeyUp(null, this,
+                "return {fieldId:source.id, fieldValue:source.value};", null);
+
+        usernameOnChange = new OnChange(
+                "/*client side validation may be done here*/ return true;",
+                LoginTemplate.this,
+                "return {fieldName:'username', fieldValue:source.value};",
+                null);
+
+        passwordOnChange = new OnChange(null, LoginTemplate.this,
+                "return {fieldName:'password', fieldValue:source.value};",
+                null);
+        
+        loginButtonOnClick = new OnClick("return true;", LoginTemplate.this,
+                "return {fieldName:'loginButton', username:document.getElementById('usernameId').value, password:document.getElementById('passwordId').value};",
+                " if(jsObject == null) {return;} var status = jsObject.status; if (status === false) {alert(jsObject.statusMessage);}");
+        
 
         form = new Form(this, new Target("https://webfirmframework.github.io"),
                 new OnSubmit(
@@ -95,11 +108,7 @@ public class LoginTemplate extends Div implements ServerAsyncMethod {
                 new NoTag(this, "Username : ");
 
                 new Input(this, new Id("usernameId"), new Type(Type.TEXT),
-                        new OnChange(
-                                "/*client side validation may be done here*/ return true;",
-                                LoginTemplate.this,
-                                "return {fieldName:'username', fieldValue:source.value};",
-                                null));
+                        usernameOnChange);
 
                 msgSpan = new Span(this);
 
@@ -108,20 +117,16 @@ public class LoginTemplate extends Div implements ServerAsyncMethod {
 
                 new NoTag(this, "Password : ");
 
-                new Input(this, new Id("passwordId"), lengthValidation,
+                new Input(this, new Id("passwordId"), passwordOnKeyUp,
                         new Type(Type.PASSWORD),
-                        new OnChange(null, LoginTemplate.this,
-                                "return {fieldName:'password', fieldValue:source.value};",
-                                null));
+                        passwordOnChange);
 
                 new Br(this);
                 new Br(this);
 
                 Input loginButton = new Input(this, new Type(Type.SUBMIT),
                         new Value("Login"),
-                        new OnClick("return true;", LoginTemplate.this,
-                                "return {fieldName:'loginButton', username:document.getElementById('usernameId').value, password:document.getElementById('passwordId').value};",
-                                " if(jsObject == null) {return;} var status = jsObject.status; if (status === false) {alert(jsObject.statusMessage);}"));
+                        loginButtonOnClick);
 
                 loginButton.addAttributes(getStyleToCenter());
 
@@ -138,29 +143,24 @@ public class LoginTemplate extends Div implements ServerAsyncMethod {
         displayInServerLogPage("asyncMethod");
 
         if (wffBMObject != null) {
-            LOGGER.info("fieldName " + wffBMObject.getValue("fieldName"));
-            if ("username".equals(wffBMObject.getValue("fieldName"))) {
+            
+            if (usernameOnChange.equals(event.getSourceAttribute())) {
 
                 username = (String) wffBMObject.getValue("fieldValue");
                 LOGGER.info("username " + username);
 
                 displayInServerLogPage("username " + username);
 
-                if (username.length() < 4) {
-                    msgSpan.addInnerHtml(
-                            new NoTag(null, "Minimum 4 letters required"));
-                } else {
-                    msgSpan.removeAllChildren();
-                }
+                validateLength(wffBMObject);
 
-            } else if ("password".equals(wffBMObject.getValue("fieldName"))) {
+            } else if (passwordOnChange.equals(event.getSourceAttribute())) {
 
                 password = (String) wffBMObject.getValue("fieldValue");
-                LOGGER.info("password " + password);
-                displayInServerLogPage("password " + password);
+                LOGGER.info("password onchange " + password);
+                displayInServerLogPage("password onchange " + password);
 
-            } else if ("loginButton".equals(wffBMObject.getValue("fieldName"))
-                    || event.getSourceTag().equals(form)) {
+            } else if (loginButtonOnClick.equals(event.getSourceAttribute())
+                    || form.equals(event.getSourceTag())) {
 
                 username = (String) wffBMObject.getValue("username");
                 password = (String) wffBMObject.getValue("password");
@@ -185,6 +185,10 @@ public class LoginTemplate extends Div implements ServerAsyncMethod {
                     return result;
                 }
 
+            } else if (passwordOnKeyUp.equals(event.getSourceAttribute())) {
+                validateLength(wffBMObject);
+                LOGGER.info("password onchange " + "password onkeyup " + password);
+                displayInServerLogPage("password onkeyup " + password);
             }
         }
 
@@ -197,7 +201,9 @@ public class LoginTemplate extends Div implements ServerAsyncMethod {
         if (serverLogPageInstanceId != null) {
             ServerLogPage serverLogPage = (ServerLogPage) BrowserPageContext.INSTANCE
                     .getBrowserPage(serverLogPageInstanceId.toString());
-            serverLogPage.log(msg);
+            if (serverLogPage != null) {
+                serverLogPage.log(msg);
+            }
         }
     }
 
