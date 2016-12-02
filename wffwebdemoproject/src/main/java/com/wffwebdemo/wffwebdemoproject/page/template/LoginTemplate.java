@@ -187,8 +187,8 @@ public class LoginTemplate extends Div implements ServerAsyncMethod {
 
             } else if (passwordOnKeyUp.equals(event.getSourceAttribute())) {
                 validateLength(wffBMObject);
-                LOGGER.info("password onchange " + "password onkeyup " + password);
-                displayInServerLogPage("password onkeyup " + password);
+                LOGGER.info("password onchange " + "password onkeyup " + wffBMObject.getValue("fieldValue"));
+                displayInServerLogPage("password onkeyup " + wffBMObject.getValue("fieldValue"));
             }
         }
 
