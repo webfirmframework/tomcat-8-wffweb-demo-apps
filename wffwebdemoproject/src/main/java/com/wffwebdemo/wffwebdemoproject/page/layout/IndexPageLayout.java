@@ -12,9 +12,11 @@ import com.webfirmframework.wffweb.tag.html.H4;
 import com.webfirmframework.wffweb.tag.html.Html;
 import com.webfirmframework.wffweb.tag.html.TitleTag;
 import com.webfirmframework.wffweb.tag.html.attribute.Href;
+import com.webfirmframework.wffweb.tag.html.attribute.Name;
 import com.webfirmframework.wffweb.tag.html.attribute.Src;
 import com.webfirmframework.wffweb.tag.html.attribute.Target;
 import com.webfirmframework.wffweb.tag.html.attribute.Type;
+import com.webfirmframework.wffweb.tag.html.attribute.event.ServerAsyncMethod;
 import com.webfirmframework.wffweb.tag.html.attribute.event.mouse.OnClick;
 import com.webfirmframework.wffweb.tag.html.attribute.global.Style;
 import com.webfirmframework.wffweb.tag.html.formsandinputs.Button;
@@ -24,8 +26,10 @@ import com.webfirmframework.wffweb.tag.html.programming.Script;
 import com.webfirmframework.wffweb.tag.html.stylesandsemantics.Div;
 import com.webfirmframework.wffweb.tag.html.stylesandsemantics.Span;
 import com.webfirmframework.wffweb.tag.htmlwff.NoTag;
+import com.webfirmframework.wffweb.wffbm.data.WffBMObject;
 import com.wffwebdemo.wffwebdemoproject.page.model.DocumentModel;
 import com.wffwebdemo.wffwebdemoproject.page.template.LoginTemplate;
+import com.wffwebdemo.wffwebdemoproject.page.template.components.SuggestionSearchInput;
 
 public class IndexPageLayout extends Html {
 
@@ -64,6 +68,12 @@ public class IndexPageLayout extends Html {
         new Body(this, new Style("background:lightgray")) {
 
             {
+                
+                new SuggestionSearchInput(this);
+                new Br(this);
+                new Br(this);
+                
+                
                 //it's kept as a separate js file
                 final String js = "var argument = {"
                         + "'somekey':'some value',"
@@ -180,9 +190,26 @@ public class IndexPageLayout extends Html {
                 documentModel.setPageTitle(pageTitle);
                 documentModel.setHttpSession(httpSession);
                 
-                
-                bodyDiv.appendChild(new LoginTemplate(documentModel));
-                
+                final LoginTemplate loginTemplate = new LoginTemplate(documentModel);
+                bodyDiv.appendChild(loginTemplate);
+                final Div anotherDiv = new Div(this, new Name("insertBeforeThis"));
+                anotherDiv.appendChild(new Button(null, new OnClick(new ServerAsyncMethod() {
+                    
+                    private int count = 0;
+                    
+                    @Override
+                    public WffBMObject asyncMethod(WffBMObject wffBMObject, Event event) {
+                        count++;
+                        anotherDiv.insertBefore(
+                                new NoTag(null, "Hello Test User " + count));
+                        // TODO Auto-generated method stub
+                        return null;
+                    }
+                })){
+                    {
+                        new NoTag(this, "Click To Change");
+                    }
+                });
             }
 
         };
