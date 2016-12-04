@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
+import com.webfirmframework.wffweb.server.page.BrowserPage;
 import com.webfirmframework.wffweb.tag.html.Body;
 import com.webfirmframework.wffweb.tag.html.Br;
 import com.webfirmframework.wffweb.tag.html.H4;
@@ -41,9 +42,12 @@ public class IndexPageLayout extends Html {
     
     private List<Runnable> allThreads;
 
-    public IndexPageLayout(HttpSession httpSession) {
+    private BrowserPage browserPage;
+
+    public IndexPageLayout(HttpSession httpSession, BrowserPage browserPage) {
         super(null);
         this.httpSession = httpSession;
+        this.browserPage = browserPage;
         super.setPrependDocType(true);
         
         allThreads = new ArrayList<Runnable>();
@@ -182,7 +186,7 @@ public class IndexPageLayout extends Html {
                 new Br(this);
                 new Br(this);
                 
-                DocumentModel documentModel = new DocumentModel();
+                DocumentModel documentModel = new DocumentModel(browserPage);
                 
                 Div bodyDiv = new Div(this);
                 documentModel.setBodyDiv(bodyDiv);

@@ -308,9 +308,14 @@ public class ListUsersTempate extends Div implements ServerAsyncMethod {
 
             AbstractHtml[] ownerTags = countryColumnStyle.getOwnerTags();
 
-            for (AbstractHtml ownerTag : ownerTags) {
-                ownerTag.removeAttributes(
-                        countryColumnStyle.getAttributeName());
+            try {
+                documentModel.getBrowserPage().holdPush();
+                for (AbstractHtml ownerTag : ownerTags) {
+                    ownerTag.removeAttributes(
+                            countryColumnStyle.getAttributeName());
+                }
+            } finally {
+                documentModel.getBrowserPage().unholdPush();
             }
             displayInServerLogPage("remove style atribyte one by one");
         } else if (lazyNextRowsButton.equals(event.getSourceTag())) {
@@ -330,7 +335,9 @@ public class ListUsersTempate extends Div implements ServerAsyncMethod {
         if (serverLogPageInstanceId != null) {
             ServerLogPage serverLogPage = (ServerLogPage) BrowserPageContext.INSTANCE
                     .getBrowserPage(serverLogPageInstanceId.toString());
-            serverLogPage.log(msg);
+            if (serverLogPage != null) {
+                serverLogPage.log(msg);
+            }
         }
     }
 

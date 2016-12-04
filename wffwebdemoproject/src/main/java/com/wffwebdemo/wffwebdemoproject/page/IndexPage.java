@@ -1,6 +1,7 @@
 package com.wffwebdemo.wffwebdemoproject.page;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -31,7 +32,7 @@ public class IndexPage extends BrowserPage implements Threaded {
 
         // here we should return the object IndexPageLayout
 
-        indexPageLayout = new IndexPageLayout(httpSession);
+        indexPageLayout = new IndexPageLayout(httpSession, this);
         return indexPageLayout;
     }
 
