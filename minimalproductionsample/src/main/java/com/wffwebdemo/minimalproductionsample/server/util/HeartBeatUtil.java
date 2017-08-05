@@ -13,14 +13,20 @@ public class HeartBeatUtil {
     private static final Logger LOGGER = Logger
             .getLogger(HeartBeatUtil.class.getName());
 
-    public static void ping(String sessionId) {
+    public static void ping(final String sessionId) {
+
+        if (ServerConstants.CONTEXT_PATH == null) {
+            return;
+        }
 
         Thread thread = new Thread(new Runnable() {
 
             @Override
             public void run() {
                 try {
-                    String url = ServerConstants.DOMAIN_URL + "/heart-beat";
+                    String url = ServerConstants.DOMAIN_URL
+                            .concat(ServerConstants.CONTEXT_PATH)
+                            .concat("/heart-beat");
 
                     URL obj = new URL(url);
                     HttpURLConnection con = (HttpURLConnection) obj

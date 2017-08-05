@@ -16,6 +16,7 @@ import com.webfirmframework.wffweb.tag.html.attribute.core.AttributeRegistry;
 import com.webfirmframework.wffweb.tag.html.core.TagRegistry;
 import com.wffwebdemo.minimalproductionsample.page.IndexPage;
 import com.wffwebdemo.minimalproductionsample.page.model.DocumentModel;
+import com.wffwebdemo.minimalproductionsample.server.constants.ServerConstants;
 
 /**
  * Servlet implementation class HomePageServlet
@@ -41,6 +42,7 @@ public class IndexPageServlet extends HttpServlet {
 		TagRegistry.getTagClassNameByTagName();
 		AttributeRegistry.getAttributeClassNameByAttributeName();
 		LOGGER.info("Loaded all wffweb classes");
+		ServerConstants.CONTEXT_PATH = getServletContext().getContextPath();
 	}
 
 	/**

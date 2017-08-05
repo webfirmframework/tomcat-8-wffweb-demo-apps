@@ -15,68 +15,70 @@ import com.wffwebdemo.minimalproductionsample.server.constants.ServerConstants;
 
 public class IndexPage extends BrowserPage {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@SuppressWarnings("unused")
-	private static final Logger LOGGER = Logger.getLogger(IndexPage.class.getName());
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = Logger
+            .getLogger(IndexPage.class.getName());
 
-	// this is a standard interval
-	public static final int HEARTBEAT_TIME_MILLISECONDS = 25000;
+    // this is a standard interval
+    public static final int HEARTBEAT_TIME_MILLISECONDS = 25000;
 
-	private static final int WS_RECONNECT_TIME = 1000;
+    private static final int WS_RECONNECT_TIME = 1000;
 
-	private DocumentModel documentModel;
+    private DocumentModel documentModel;
 
-	private IndexPageLayout indexPageLayout;
+    private IndexPageLayout indexPageLayout;
 
-	private AbstractHtml mainDiv;
+    private AbstractHtml mainDiv;
 
-	private List<AbstractHtml> mainDivChildren;
+    private List<AbstractHtml> mainDivChildren;
 
-	public IndexPage(DocumentModel documentModel) {
-		this.documentModel = documentModel;
-	}
+    public IndexPage(DocumentModel documentModel) {
+        this.documentModel = documentModel;
+    }
 
-	@Override
-	public String webSocketUrl() {
-		return ServerConstants.DOMAIN_WS_URL.concat(ServerConstants.INDEX_PAGE_WS_URI);
-	}
+    @Override
+    public String webSocketUrl() {
+        return ServerConstants.DOMAIN_WS_URL.concat(ServerConstants.CONTEXT_PATH
+                .concat(ServerConstants.INDEX_PAGE_WS_URI));
+    }
 
-	@Override
-	public AbstractHtml render() {
-		super.setWebSocketHeartbeatInterval(HEARTBEAT_TIME_MILLISECONDS);
-		super.setWebSocketReconnectInterval(WS_RECONNECT_TIME);
-		
-		
-		documentModel.setBrowserPage(this);
+    @Override
+    public AbstractHtml render() {
+        super.setWebSocketHeartbeatInterval(HEARTBEAT_TIME_MILLISECONDS);
+        super.setWebSocketReconnectInterval(WS_RECONNECT_TIME);
 
-		indexPageLayout = new IndexPageLayout(documentModel);
-		
-		mainDiv = TagRepository.findTagById("mainDivId", indexPageLayout);
-		
-		//to remove main div and to insert "Loading..." before rendering
-		if (mainDiv != null) {
-			mainDivChildren = mainDiv.getChildren();
-			mainDiv.addInnerHtml(new NoTag(null, "Loading..."));
-		}
-		
-		return indexPageLayout;
-	}
-	
-	@Override
-	public int toOutputStream(OutputStream os, String charset) throws IOException {
-		int outputStream = super.toOutputStream(os, charset);
-		// to restore main div in the body
-		// this makes the main div to be inserted via websocket communication
-		if (mainDiv != null && mainDivChildren != null) {
-			mainDiv.addInnerHtmls(mainDivChildren.toArray(new AbstractHtml[mainDivChildren.size()]));
-		}
-		return outputStream;
-	}
-	
-	public DocumentModel getDocumentModel() {
-		return documentModel;
-	}
-	
+        documentModel.setBrowserPage(this);
+
+        indexPageLayout = new IndexPageLayout(documentModel);
+
+        mainDiv = TagRepository.findTagById("mainDivId", indexPageLayout);
+
+        // to remove main div and to insert "Loading..." before rendering
+        if (mainDiv != null) {
+            mainDivChildren = mainDiv.getChildren();
+            mainDiv.addInnerHtml(new NoTag(null, "Loading..."));
+        }
+
+        return indexPageLayout;
+    }
+
+    @Override
+    public int toOutputStream(OutputStream os, String charset)
+            throws IOException {
+        int outputStream = super.toOutputStream(os, charset);
+        // to restore main div in the body
+        // this makes the main div to be inserted via websocket communication
+        if (mainDiv != null && mainDivChildren != null) {
+            mainDiv.addInnerHtmls(mainDivChildren
+                    .toArray(new AbstractHtml[mainDivChildren.size()]));
+        }
+        return outputStream;
+    }
+
+    public DocumentModel getDocumentModel() {
+        return documentModel;
+    }
 
 }
