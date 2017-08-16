@@ -25,9 +25,9 @@ public class SampleTemplate2 extends Div implements ServerAsyncMethod {
 
 	private DocumentModel documentModel;
 
-	public SampleTemplate2(DocumentModel documentModel) {
+	public SampleTemplate2() {
 		super(null);
-		this.documentModel = documentModel;
+		this.documentModel = (DocumentModel) super.getSharedData();
 		develop();
 	}
 
@@ -98,7 +98,7 @@ public class SampleTemplate2 extends Div implements ServerAsyncMethod {
 
 	@Override
 	public WffBMObject asyncMethod(WffBMObject wffBMObject, Event event) {
-		this.insertBefore(new SampleTemplate1(documentModel));
+		this.insertBefore(new SampleTemplate1());
 		this.getParent().removeChild(this);
 		
 		return null;

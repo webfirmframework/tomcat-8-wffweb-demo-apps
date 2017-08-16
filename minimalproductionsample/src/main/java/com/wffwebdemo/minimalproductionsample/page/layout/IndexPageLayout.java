@@ -37,6 +37,7 @@ public class IndexPageLayout extends Html implements ServerAsyncMethod {
 
 	public IndexPageLayout(DocumentModel documentModel) {
 		super(null);
+		super.setSharedData(documentModel);
 		this.documentModel = documentModel;
 		develop();
 	}
@@ -85,7 +86,9 @@ public class IndexPageLayout extends Html implements ServerAsyncMethod {
 		
 		if (mainDiv != null) {
 			LOGGER.info("SampleTemplate1 appended");
-			mainDiv.appendChild(new SampleTemplate1(documentModel));
+			mainDiv.appendChild(new SampleTemplate1());
+			TitleTag titleTag = tagRepository.findOneTagAssignableToTag(TitleTag.class);
+			titleTag.addInnerHtml(new NoTag(null, "Bootstrap Example | SampleTemplate1"));
 		}
 		
 		return null;
