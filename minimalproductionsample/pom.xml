@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>com.webfirmframework</groupId>
 			<artifactId>wffweb</artifactId>
-			<version>2.1.12</version>
+			<version>RELEASE</version>
 		</dependency>
 	</dependencies>
 
