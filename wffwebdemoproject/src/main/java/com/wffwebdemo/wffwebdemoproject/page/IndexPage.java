@@ -28,6 +28,12 @@ public class IndexPage extends BrowserPage implements Threaded {
     @Override
     public AbstractHtml render() {
         
+        //it must be set to false if there is a anchor tag which opens new tab/window
+        //otherwise the browserPage will be removed from the BrowserPageContext
+        //when clicking on the link
+        super.removeFromContext(false, BrowserPage.On.INIT_REMOVE_PREVIOUS);
+        
+        
         super.addServerMethod("testServerMethod", new CustomServerMethod());
 
         // here we should return the object IndexPageLayout
@@ -67,4 +73,9 @@ public class IndexPage extends BrowserPage implements Threaded {
         }
     }
 
+    @Override
+    protected void removedFromContext() {
+        super.removedFromContext();
+        stopAllThreads();
+    }
 }
