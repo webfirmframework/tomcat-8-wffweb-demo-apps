@@ -16,9 +16,9 @@ public class SampleTemplate1 extends Div implements ServerAsyncMethod {
 
 	private DocumentModel documentModel;
 
-	public SampleTemplate1() {
+	public SampleTemplate1(DocumentModel documentModel) {
 		super(null);
-		this.documentModel = (DocumentModel) super.getSharedData();
+		this.documentModel = documentModel;
 		develop();
 	}
 
@@ -43,14 +43,14 @@ public class SampleTemplate1 extends Div implements ServerAsyncMethod {
 			AbstractHtml title = tagRepository.findTagById("windowTitleId");
 			if (title != null) {
 				title.addInnerHtml(new NoTag(null, "SampleTemplate1"));
-			} 
+			}
 		}
 	}
 
 	@Override
 	public WffBMObject asyncMethod(WffBMObject wffBMObject, Event event) {
 		
-		this.insertBefore(new SampleTemplate2());
+		this.insertBefore(new SampleTemplate2(documentModel));
 		this.getParent().removeChild(this);
 		
 		return null;
