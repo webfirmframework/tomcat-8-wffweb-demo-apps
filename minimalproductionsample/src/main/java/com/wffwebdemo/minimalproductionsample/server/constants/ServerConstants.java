@@ -1,6 +1,6 @@
 package com.wffwebdemo.minimalproductionsample.server.constants;
 
-public class ServerConstants {
+public final class ServerConstants {
 
     public static final String DOMAIN_URL;
 
