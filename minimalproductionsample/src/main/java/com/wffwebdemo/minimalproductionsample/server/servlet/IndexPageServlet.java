@@ -24,58 +24,61 @@ import com.wffwebdemo.minimalproductionsample.server.constants.ServerConstants;
 @WebServlet({ "/index" })
 public class IndexPageServlet extends HttpServlet {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private static Logger LOGGER = Logger.getLogger(IndexPageServlet.class.getName());
+    private static Logger LOGGER = Logger
+            .getLogger(IndexPageServlet.class.getName());
 
-	/**
-	 * @see HttpServlet#HttpServlet()
-	 */
-	public IndexPageServlet() {
-		super();
-	}
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public IndexPageServlet() {
+        super();
+    }
 
-	@Override
-	public void init() throws ServletException {
-		super.init();
-		// optional
-		TagRegistry.loadAllTagClasses();
-		AttributeRegistry.loadAllAttributeClasses();
-		LOGGER.info("Loaded all wffweb classes");
-		ServerConstants.CONTEXT_PATH = getServletContext().getContextPath();
-	}
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        // optional
+        TagRegistry.loadAllTagClasses();
+        AttributeRegistry.loadAllAttributeClasses();
+        LOGGER.info("Loaded all wffweb classes");
+        ServerConstants.CONTEXT_PATH = getServletContext().getContextPath();
+    }
 
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+    /**
+     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+     *      response)
+     */
+    protected void doGet(HttpServletRequest request,
+            HttpServletResponse response) throws ServletException, IOException {
 
-		response.setContentType("text/html;charset=utf-8");
+        response.setContentType("text/html;charset=utf-8");
 
-		try (OutputStream os = response.getOutputStream();) {
+        try (OutputStream os = response.getOutputStream();) {
 
-			HttpSession session = request.getSession();
+            HttpSession session = request.getSession();
 
-			DocumentModel documentModel = (DocumentModel) session.getAttribute("DOCUMENT_MODEL");
+            DocumentModel documentModel = (DocumentModel) session
+                    .getAttribute("DOCUMENT_MODEL");
 
-			IndexPage indexPage = null;
+            IndexPage indexPage = null;
 
-			if (documentModel == null) {
-				documentModel = new DocumentModel();
-				documentModel.setHttpSession(request.getSession());
-				session.setAttribute("DOCUMENT_MODEL", documentModel);
-			}
+            if (documentModel == null) {
+                documentModel = new DocumentModel();
+                documentModel.setHttpSession(request.getSession());
+                session.setAttribute("DOCUMENT_MODEL", documentModel);
+            }
 
-			indexPage = new IndexPage(documentModel);
+            indexPage = new IndexPage(documentModel);
 
-			BrowserPageContext.INSTANCE.addBrowserPage(session.getId(), indexPage);
+            BrowserPageContext.INSTANCE.addBrowserPage(session.getId(),
+                    indexPage);
 
-			indexPage.toOutputStream(os, "UTF-8");
-			os.flush();
-		}
+            indexPage.toOutputStream(os, "UTF-8");
+            os.flush();
+        }
 
-	}
+    }
 
 }

@@ -23,84 +23,84 @@ import com.wffwebdemo.minimalproductionsample.page.model.DocumentModel;
 @SuppressWarnings("serial")
 public class SampleTemplate2 extends Div implements ServerAsyncMethod {
 
-	private DocumentModel documentModel;
+    private DocumentModel documentModel;
 
-	public SampleTemplate2(DocumentModel documentModel) {
-		super(null);
-		this.documentModel = documentModel;
-		develop();
-	}
+    public SampleTemplate2(DocumentModel documentModel) {
+        super(null);
+        this.documentModel = documentModel;
+        develop();
+    }
 
-	private void develop() {
-		changeTitle();
-		
-		final ClassAttribute classAttribute10 = new ClassAttribute("form-group");
-		final ClassAttribute classAttribute13 = new ClassAttribute("form-control");
+    private void develop() {
+        changeTitle();
+        
+        final ClassAttribute classAttribute10 = new ClassAttribute("form-group");
+        final ClassAttribute classAttribute13 = new ClassAttribute("form-control");
 
-		new H2(this) {{
-			new NoTag(this, "Vertical (basic) form");
-		}};
-		new Form(this,
-			new OnSubmit(this)) {{
-			new Div(this,
-				classAttribute10) {{
-				new Label(this,
-					new For("email")) {{
-					new NoTag(this, "Email:");
-				}};
-				new Input(this,
-					new Type("email"),
-					classAttribute13,
-					new Id("email"),
-					new Placeholder("Enter email"),
-					new Name("email"));
-			}};
-			new Div(this,
-				classAttribute10) {{
-				new Label(this,
-					new For("pwd")) {{
-					new NoTag(this, "Password:");
-				}};
-				new Input(this,
-					new Type("password"),
-					classAttribute13,
-					new Id("pwd"),
-					new Placeholder("Enter password"),
-					new Name("pwd"));
-			}};
-			new Div(this,
-				new ClassAttribute("checkbox")) {{
-				new Label(this) {{
-					new Input(this,
-						new Type("checkbox"),
-						new Name("remember"));
-					new NoTag(this, " Remember me");
-				}};
-			}};
-			new Button(this,
-				new Type("submit"),
-				new ClassAttribute("btn btn-default")) {{
-				new NoTag(this, "Submit");
-			}};
-		}};
-	}
-	
-	private void changeTitle() {
-		// getTagRepository() will give object only if the browserPage.render is returned
-		TagRepository tagRepository = documentModel.getBrowserPage().getTagRepository();
-		if (tagRepository != null) {
-			AbstractHtml title = tagRepository.findTagById("windowTitleId");
-			if (title != null) {
-				title.addInnerHtml(new NoTag(null, "SampleTemplate2"));
-			} 
-		}
-	}
+        new H2(this) {{
+            new NoTag(this, "Vertical (basic) form");
+        }};
+        new Form(this,
+            new OnSubmit(this)) {{
+            new Div(this,
+                classAttribute10) {{
+                new Label(this,
+                    new For("email")) {{
+                    new NoTag(this, "Email:");
+                }};
+                new Input(this,
+                    new Type("email"),
+                    classAttribute13,
+                    new Id("email"),
+                    new Placeholder("Enter email"),
+                    new Name("email"));
+            }};
+            new Div(this,
+                classAttribute10) {{
+                new Label(this,
+                    new For("pwd")) {{
+                    new NoTag(this, "Password:");
+                }};
+                new Input(this,
+                    new Type("password"),
+                    classAttribute13,
+                    new Id("pwd"),
+                    new Placeholder("Enter password"),
+                    new Name("pwd"));
+            }};
+            new Div(this,
+                new ClassAttribute("checkbox")) {{
+                new Label(this) {{
+                    new Input(this,
+                        new Type("checkbox"),
+                        new Name("remember"));
+                    new NoTag(this, " Remember me");
+                }};
+            }};
+            new Button(this,
+                new Type("submit"),
+                new ClassAttribute("btn btn-default")) {{
+                new NoTag(this, "Submit");
+            }};
+        }};
+    }
+    
+    private void changeTitle() {
+        // getTagRepository() will give object only if the browserPage.render is returned
+        TagRepository tagRepository = documentModel.getBrowserPage().getTagRepository();
+        if (tagRepository != null) {
+            AbstractHtml title = tagRepository.findTagById("windowTitleId");
+            if (title != null) {
+                title.addInnerHtml(new NoTag(null, "SampleTemplate2"));
+            } 
+        }
+    }
 
-	@Override
-	public WffBMObject asyncMethod(WffBMObject wffBMObject, Event event) {
-		this.insertBefore(new SampleTemplate1(documentModel));
-		this.getParent().removeChild(this);
-		
-		return null;
-	}
+    @Override
+    public WffBMObject asyncMethod(WffBMObject wffBMObject, Event event) {
+        this.insertBefore(new SampleTemplate1(documentModel));
+        this.getParent().removeChild(this);
+        
+        return null;
+    }
 }
