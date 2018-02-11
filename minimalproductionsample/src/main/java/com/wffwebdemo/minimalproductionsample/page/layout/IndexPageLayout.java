@@ -37,6 +37,7 @@ public class IndexPageLayout extends Html implements ServerAsyncMethod {
 
     public IndexPageLayout(DocumentModel documentModel) {
         super(null);
+        super.setPrependDocType(true);
         super.setSharedData(documentModel);
         this.documentModel = documentModel;
         develop();
