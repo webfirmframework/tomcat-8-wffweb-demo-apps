@@ -24,6 +24,7 @@ import com.webfirmframework.wffweb.tag.html.programming.Script;
 import com.webfirmframework.wffweb.tag.html.stylesandsemantics.Div;
 import com.webfirmframework.wffweb.tag.htmlwff.NoTag;
 import com.webfirmframework.wffweb.tag.repository.TagRepository;
+import com.webfirmframework.wffweb.wffbm.data.BMValueType;
 import com.webfirmframework.wffweb.wffbm.data.WffBMObject;
 import com.wffwebdemo.minimalproductionsample.page.model.DocumentModel;
 import com.wffwebdemo.minimalproductionsample.page.template.SampleTemplate1;
@@ -70,6 +71,28 @@ public class IndexPageLayout extends Html implements ServerAsyncMethod {
                 new Button(this, new OnClick(IndexPageLayout.this)) {{
                     new NoTag(this, "Insert SampleTemplate1");
                 }};
+                
+                
+                new Button(this, new OnClick("return confirm('Do you want to send some data to server to print in server console?');", 
+                        (data, event) -> {
+                            String value = (String) data.getValue("val");
+                            
+                            System.out.println("value: " + value);
+                            
+                            WffBMObject resultData = new WffBMObject();
+                            
+                            resultData.put("msg", 
+                                    BMValueType.STRING, 
+                                    "This is a message received from server!");
+                            
+                            return resultData;
+                            },
+                        "return {val: 'this is from client'};", 
+                        "if (jsObject && jsObject.msg) {alert(jsObject.msg);}")) {{
+                    new NoTag(this, "Send data to server");
+                }};
+                
+                
                 new Br(this);
                 new Br(this);
             }};
