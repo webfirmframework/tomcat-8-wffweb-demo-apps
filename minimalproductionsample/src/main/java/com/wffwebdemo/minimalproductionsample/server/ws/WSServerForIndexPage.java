@@ -3,6 +3,8 @@ package com.wffwebdemo.minimalproductionsample.server.ws;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletRequestEvent;
@@ -25,15 +27,19 @@ import javax.websocket.server.ServerEndpointConfig.Configurator;
 import com.webfirmframework.wffweb.PushFailedException;
 import com.webfirmframework.wffweb.server.page.BrowserPage;
 import com.webfirmframework.wffweb.server.page.BrowserPageContext;
-import com.webfirmframework.wffweb.server.page.WebSocketPushListener;
+import com.webfirmframework.wffweb.server.page.HeartbeatManager;
+import com.webfirmframework.wffweb.server.page.PayloadProcessor;
 import com.webfirmframework.wffweb.server.page.action.BrowserPageAction;
+import com.webfirmframework.wffweb.util.ByteBufferUtil;
+import com.wffwebdemo.minimalproductionsample.AppSettings;
+import com.wffwebdemo.minimalproductionsample.page.IndexPage;
+import com.wffwebdemo.minimalproductionsample.page.model.DocumentModel;
 import com.wffwebdemo.minimalproductionsample.server.constants.ServerConstants;
-import com.wffwebdemo.minimalproductionsample.server.util.HeartBeatUtil;
 
 /**
  * @ServerEndpoint gives the relative name for the end point This will be
  *                 accessed via
- *                 ws://localhost:8080/wffwebdemoproject/ws-for-wffweb.
+ *                 ws://localhost:8080/minimalproductionsample/ws-for-index-page
  */
 @ServerEndpoint(value = ServerConstants.INDEX_PAGE_WS_URI, configurator = WSServerForIndexPage.class)
 @WebListener
@@ -47,21 +53,40 @@ public class WSServerForIndexPage extends Configurator
 
     private HttpSession httpSession;
 
-    private long lastHeartbeatTime;
+    private PayloadProcessor payloadProcessor;
 
-    private static final long HTTP_SESSION_HEARTBEAT_INVTERVAL = ServerConstants.SESSION_TIMEOUT_MILLISECONDS
+    private static final long HTTP_SESSION_HEARTBEAT_INTERVAL = ServerConstants.SESSION_TIMEOUT_MILLISECONDS
             - (1000 * 60 * 2);
+    
+    private volatile HeartbeatManager heartbeatManager;
 
     @Override
     public void modifyHandshake(ServerEndpointConfig config,
             HandshakeRequest request, HandshakeResponse response) {
 
-        HttpSession httpSession = (HttpSession) request.getHttpSession();
+        final Map<String, List<String>> parameterMap = request
+                .getParameterMap();
+
+        HttpSession httpSession = null;
+
+        List<String> wffInstanceIds = parameterMap
+                .get(BrowserPage.WFF_INSTANCE_ID);
+        String instanceId = wffInstanceIds.get(0);
+        browserPage = BrowserPageContext.INSTANCE.webSocketOpened(instanceId);
+        DocumentModel documentModel = null;
+
+        if (browserPage instanceof IndexPage) {
+            IndexPage indexPage = (IndexPage) browserPage;
+            documentModel = indexPage.getDocumentModel();
+            httpSession = documentModel.getHttpSession();
+        }
 
         super.modifyHandshake(config, request, response);
 
+        // in a worst case if the httpSession is null
         if (httpSession == null) {
-            LOGGER.info("httpSession == null after modifyHandshake");
+            LOGGER.info(
+                    "httpSession == null after modifyHandshake so httpSession = (HttpSession) request.getHttpSession()");
             httpSession = (HttpSession) request.getHttpSession();
         }
 
@@ -71,8 +96,6 @@ public class WSServerForIndexPage extends Configurator
         }
 
         config.getUserProperties().put("httpSession", httpSession);
-
-        httpSession = (HttpSession) request.getHttpSession();
         LOGGER.info("modifyHandshake " + httpSession.getId());
 
     }
@@ -112,7 +135,12 @@ public class WSServerForIndexPage extends Configurator
             // never to close the session on inactivity
             httpSession.setMaxInactiveInterval(-1);
             LOGGER.info("httpSession.setMaxInactiveInterval(-1)");
-            HeartBeatUtil.ping(httpSession.getId());
+            
+            final HeartbeatManager hbm = HeartbeatRunnable.HEARTBEAT_MANAGER_MAP.computeIfAbsent(httpSession.getId(),
+                    k -> new HeartbeatManager(AppSettings.CACHED_THREAD_POOL,
+                            HTTP_SESSION_HEARTBEAT_INTERVAL, new HeartbeatRunnable(httpSession.getId())));
+            heartbeatManager = hbm;
+            hbm.runAsync();
         }
 
         List<String> wffInstanceIds = session.getRequestParameterMap()
@@ -136,18 +164,43 @@ public class WSServerForIndexPage extends Configurator
 
         }
 
-        browserPage.addWebSocketPushListener(session.getId(),
-                new WebSocketPushListener() {
+        // Internally it may contain a volatile variable
+        // so it's better to declare a dedicated variable before
+        // addWebSocketPushListener.
+        // If the maxBinaryMessageBufferSize is changed dynamically
+        // then call getMaxBinaryMessageBufferSize method directly in
+        // sliceIfRequired method as second argument.
+        final int maxBinaryMessageBufferSize = session
+                .getMaxBinaryMessageBufferSize();
+        
+        // NB: do not use browserPage.getPayloadProcessor it has bug
+        // payloadProcessor = browserPage.getPayloadProcessor();
+        payloadProcessor = new PayloadProcessor(browserPage);
 
-                    @Override
-                    public synchronized void push(ByteBuffer data) {
+        browserPage.addWebSocketPushListener(session.getId(), data -> {
+
+            ByteBufferUtil.sliceIfRequired(data, maxBinaryMessageBufferSize,
+                    (part, last) -> {
+
                         try {
-                            session.getBasicRemote().sendBinary(data);
-                        } catch (Throwable e) {
+                            session.getBasicRemote().sendBinary(part, last);
+                        } catch (IOException e) {
+                            LOGGER.log(Level.SEVERE,
+                                    "IOException while session.getBasicRemote().sendBinary(part, last)",
+                                    e);
+                            try {
+                                session.close();
+                            } catch (IOException e1) {
+                                LOGGER.log(Level.SEVERE,
+                                        "IOException while session.close()",
+                                        e1);
+                            }
                             throw new PushFailedException(e.getMessage(), e);
                         }
-                    }
-                });
+
+                        return !last;
+                    });
+        });
 
     }
 
@@ -157,18 +210,18 @@ public class WSServerForIndexPage extends Configurator
      * String.
      */
     @OnMessage
-    public void onMessage(byte[] message, Session session) {
+    public void onMessage(ByteBuffer message, boolean last, Session session) {
 
-        browserPage.webSocketMessaged(message);
+        payloadProcessor.webSocketMessaged(message, last);
 
-        if (message.length == 0) {
+        if (last && message.capacity() == 0) {
             LOGGER.info("client ping message.length == 0");
-            if (httpSession != null
-                    && HTTP_SESSION_HEARTBEAT_INVTERVAL < (System
-                            .currentTimeMillis() - lastHeartbeatTime)) {
+            if (httpSession != null) {
                 LOGGER.info("going to start httpsession hearbeat");
-                HeartBeatUtil.ping(httpSession.getId());
-                lastHeartbeatTime = System.currentTimeMillis();
+                HeartbeatManager hbm = heartbeatManager;
+                if (hbm != null) {
+                    hbm.runAsync();
+                }
             }
         }
     }
@@ -205,7 +258,10 @@ public class WSServerForIndexPage extends Configurator
             if (totalConnections == 0) {
                 httpSession.setMaxInactiveInterval(
                         ServerConstants.SESSION_TIMEOUT_SECONDS);
-                HeartBeatUtil.ping(httpSession.getId());
+                HeartbeatManager hbm = heartbeatManager;
+                if (hbm != null) {
+                    hbm.runAsync();
+                }
             }
 
             LOGGER.info("httpSession.setMaxInactiveInterval(60 * 30)");
@@ -218,6 +274,7 @@ public class WSServerForIndexPage extends Configurator
         String instanceId = wffInstanceIds.get(0);
         BrowserPageContext.INSTANCE.webSocketClosed(instanceId,
                 session.getId());
+        payloadProcessor = null;
     }
 
     @OnError
