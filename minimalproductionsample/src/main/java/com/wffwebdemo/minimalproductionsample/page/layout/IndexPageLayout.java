@@ -35,6 +35,8 @@ public class IndexPageLayout extends Html implements ServerAsyncMethod {
     private static final Logger LOGGER = Logger.getLogger(IndexPageLayout.class.getName());
 
     private DocumentModel documentModel;
+    
+    private Div mainDiv;
 
     public IndexPageLayout(DocumentModel documentModel) {
         super(null);
@@ -64,40 +66,48 @@ public class IndexPageLayout extends Html implements ServerAsyncMethod {
                 new Src("https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"));
         }};
         
-        new Body(this) {{
+        new Body(this).give(body -> {
             
-            new Div(this, new Id("mainDivId")) {{
-                new NoTag(this, "The content of the document...... ");
-                new Button(this, new OnClick(IndexPageLayout.this)) {{
-                    new NoTag(this, "Insert SampleTemplate1");
-                }};
-                
-                
-                new Button(this, new OnClick("return confirm('Do you want to send some data to server to print in server console?');", 
-                        (data, event) -> {
-                            String value = (String) data.getValue("val");
-                            
-                            System.out.println("value: " + value);
-                            
-                            WffBMObject resultData = new WffBMObject();
-                            
-                            resultData.put("msg", 
-                                    BMValueType.STRING, 
-                                    "This is a message received from server!");
-                            
-                            return resultData;
-                            },
-                        "return {val: 'this is from client'};", 
-                        "if (jsObject && jsObject.msg) {alert(jsObject.msg);}")) {{
-                    new NoTag(this, "Send data to server");
-                }};
-                
-                
-                new Br(this);
-                new Br(this);
-            }};
+            mainDiv = new Div(body, new Id("mainDivId")).give(div -> {
+                new NoTag(div, "Loading...");
+            });
             
+        });
+        
+    }
+    
+    public void buildMainDivTags() {
+        Div div = mainDiv;
+        div.removeAllChildren();
+        
+        new NoTag(div, "The content of the document...... ");
+        new Button(div, new OnClick(IndexPageLayout.this)) {{
+            new NoTag(div, "Insert SampleTemplate1");
         }};
+        
+        
+        new Button(div, new OnClick("return confirm('Do you want to send some data to server to print in server console?');", 
+                (data, event) -> {
+                    String value = (String) data.getValue("val");
+                    
+                    System.out.println("value: " + value);
+                    
+                    WffBMObject resultData = new WffBMObject();
+                    
+                    resultData.put("msg", 
+                            BMValueType.STRING, 
+                            "This is a message received from server!");
+                    
+                    return resultData;
+                    },
+                "return {val: 'this is from client'};", 
+                "if (jsObject && jsObject.msg) {alert(jsObject.msg);}")) {{
+            new NoTag(this, "Send data to server");
+        }};
+        
+        
+        new Br(div);
+        new Br(div);
         
     }
 
