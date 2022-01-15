@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>com.webfirmframework</groupId>
 			<artifactId>wffweb</artifactId>
-			<version>RELEASE</version>
+			<version>3.0.19</version>
 		</dependency>
 	</dependencies>
 	<build>
